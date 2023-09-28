@@ -5,54 +5,33 @@ type Item struct {
 	SellIn, Quality int
 }
 
+type UpdateItem interface {
+	Set(*Item)
+	Update()
+}
+
+const maxDefaultQuality = 50
+
 func UpdateQuality(items []*Item) {
-	for i := 0; i < len(items); i++ {
-
-		if items[i].Name != "Aged Brie" && items[i].Name != "Backstage passes to a TAFKAL80ETC concert" {
-			if items[i].Quality > 0 {
-				if items[i].Name != "Sulfuras, Hand of Ragnaros" {
-					items[i].Quality = items[i].Quality - 1
-				}
-			}
-		} else {
-			if items[i].Quality < 50 {
-				items[i].Quality = items[i].Quality + 1
-				if items[i].Name == "Backstage passes to a TAFKAL80ETC concert" {
-					if items[i].SellIn < 11 {
-						if items[i].Quality < 50 {
-							items[i].Quality = items[i].Quality + 1
-						}
-					}
-					if items[i].SellIn < 6 {
-						if items[i].Quality < 50 {
-							items[i].Quality = items[i].Quality + 1
-						}
-					}
-				}
-			}
-		}
-
-		if items[i].Name != "Sulfuras, Hand of Ragnaros" {
-			items[i].SellIn = items[i].SellIn - 1
-		}
-
-		if items[i].SellIn < 0 {
-			if items[i].Name != "Aged Brie" {
-				if items[i].Name != "Backstage passes to a TAFKAL80ETC concert" {
-					if items[i].Quality > 0 {
-						if items[i].Name != "Sulfuras, Hand of Ragnaros" {
-							items[i].Quality = items[i].Quality - 1
-						}
-					}
-				} else {
-					items[i].Quality = items[i].Quality - items[i].Quality
-				}
-			} else {
-				if items[i].Quality < 50 {
-					items[i].Quality = items[i].Quality + 1
-				}
-			}
-		}
+	for _, item := range items {
+		itemI := selectItem(item.Name)
+		itemI.Set(item)
+		itemI.Update()
 	}
+}
 
+func selectItem(name string) (item UpdateItem) {
+	switch name {
+	case "Aged Brie":
+		item = new(brieItem)
+	case "Backstage passes to a TAFKAL80ETC concert":
+		item = new(backStageItem)
+	case "Sulfuras, Hand of Ragnaros":
+		item = new(sulfurasItem)
+	case "Conjured Mana Cake":
+		item = new(conjuredItem)
+	default:
+		item = new(defaultItem)
+	}
+	return
 }
